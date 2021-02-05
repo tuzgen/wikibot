@@ -16,7 +16,7 @@ client.login(token);
 // state variables
 client.on('message', (message) => {
 	if (message.content.startsWith(`${prefix}wikisearch`)) {
-		var toSearch = message.content.substr(11);
+		var toSearch = message.content.substr(`${prefix}wikisearch`.length);
 		message.channel.send(`Searching ${toSearch} on Wikipedia...`);
 	}
 })
