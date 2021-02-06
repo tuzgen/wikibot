@@ -26,10 +26,8 @@ client.on("message", async (message) => {
     if (message.content.startsWith(WIKI_SEARCH)) {
       await wikiSearch(message);
     } else if (message.content.startsWith(WIKI_RANDOM)) {
-		await wikiRandom(message);
-	}
-	
-	else {
+      await wikiRandom(message);
+    } else {
       message.channel.send(`Command not found please use ${prefix}help`);
     }
   }
@@ -48,7 +46,6 @@ async function wikiSearch(message) {
 
     var wikiSearchResults = await requestData(getWikiSearchString(toSearch));
     if (wikiSearchResults.hasOwnProperty("query")) {
-
       let pages = wikiSearchResults.query.pages;
 
       createSearchEmbed(
@@ -66,26 +63,34 @@ async function wikiSearch(message) {
 }
 
 async function wikiRandom(message) {
-	const randomURL = "https://en.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=pageimages|extracts&exchars=500&exintro&explaintext&exlimit=max&format=json&origin=*";
-	var result = await requestData(encodeURI(randomURL));
+  const randomURL =
+    "https://en.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=pageimages|extracts&exchars=500&exintro&explaintext&exlimit=max&format=json&origin=*";
+  var result = await requestData(encodeURI(randomURL));
 
-	console.log(result);
+  console.log(result);
 
-	if (result.hasOwnProperty("query")) {
-		console.log(result);
+  if (result.hasOwnProperty("query")) {
+    console.log(result);
 
-		let pages = result.query.pages;
-		let firstPage = pages[Object.keys(pages)[0]];
-		console.log("Website url: " + encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title));
-		console.log(firstPage.title);
-		createRandomEmbed(firstPage.title, pages, encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title), message.channel);
-	} else {
-		console.log("ERROR: result has no property 'query'");
-	}
+    let pages = result.query.pages;
+    let firstPage = pages[Object.keys(pages)[0]];
+    console.log(
+      "Website url: " + encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title)
+    );
+    console.log(firstPage.title);
+    createRandomEmbed(
+      firstPage.title,
+      pages,
+      encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title),
+      message.channel
+    );
+  } else {
+    console.log("ERROR: result has no property 'query'");
+  }
 }
 
 function getWikiSearchString(searchTerm) {
-	// append the search term and maximum char lenght to the api url
+  // append the search term and maximum char lenght to the api url
   var rawSearchString = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${searchTerm}&gsrlimit=20&prop=pageimages|extracts&exchars=${MAX_CHARS}&exintro&explaintext&exlimit=max&format=json&origin=*`;
   const searchString = encodeURI(rawSearchString);
   return searchString;
@@ -105,81 +110,55 @@ async function requestData(searchString) {
 
 function createSearchEmbed(title, pages, link, channel) {
   console.log(pages[Object.keys(pages)[0]]);
+
+  
   const searchEmbed = new Discord.MessageEmbed()
     .setColor("#0099ff")
     .setTitle(title)
     .setURL(link)
     .setDescription(pages[Object.keys(pages)[0]].extract)
     .addFields(
-	  {
-		  value: `Did you mean: [Title](www.google.com)`,
-		  inline: false
-	  },
       {
-        name: `[${pages[Object.keys(pages)[1]].title}](${encodeURI(WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[1]].title)})`,
-        value: pages[Object.keys(pages)[1]].extract,
+		name: `I found ${pages[Object.keys(pages)[0]].title}`,
+        value: "But did you mean:",
+        inline: false,
+      },
+      {
+        name: pages[Object.keys(pages)[1]].title,
+        value: `[${pages[Object.keys(pages)[1]].title}](${encodeURI(
+			WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[1]].title
+		  )})\n` + pages[Object.keys(pages)[1]].extract,
         inline: true,
       },
       {
         name: pages[Object.keys(pages)[2]].title,
-        value: pages[Object.keys(pages)[2]].extract,
+        value: `[${pages[Object.keys(pages)[2]].title}](${encodeURI(
+			WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[2]].title
+		  )})\n` + pages[Object.keys(pages)[2]].extract,
         inline: true,
       },
-      // {
-      //   name: "Did you mean",
-      //   value: pages[Object.keys(pages)[3]].extract,
-      //   inline: true,
-      // }
     )
-	.setImage(
-		pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
-		? pages[Object.keys(pages)[0]].thumbnail.source
-		: "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
-    .setTimestamp()
-	
+    .setImage(
+      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
+        ? pages[Object.keys(pages)[0]].thumbnail.source
+        : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
+    )
+    .setTimestamp();
+
   channel.send(searchEmbed);
 }
 
 function createRandomEmbed(title, pages, link, channel) {
-	const randomEmbed = new Discord.MessageEmbed()
+  const randomEmbed = new Discord.MessageEmbed()
     .setColor("#0099ff")
     .setTitle(title)
     .setURL(link)
     .setDescription(pages[Object.keys(pages)[0]].extract)
     .setImage(
-		pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
-        ? pages[Object.keys(pages)[0]].thumbnail.source : 
-		"https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png",
-	)
-    .setTimestamp()
+      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
+        ? pages[Object.keys(pages)[0]].thumbnail.source
+        : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
+    )
+    .setTimestamp();
   channel.send(randomEmbed);
-}
-
-// code dumpster
-function processWikiResults(results) {
-  const resultArray = [];
-  Object.keys(results).forEach((key) => {
-    const id = key;
-    const title = results[key].title;
-    const text = results[key].extract;
-    const img = results[key].hasOwnProperty("thumbnail")
-      ? results[key].thumbnail.source
-      : null;
-    const item = {
-      id: id,
-      title: title,
-      img: img,
-      text: text,
-    };
-    resultArray.push(item);
-  });
-  return resultArray;
-}
-
-// functions
-function httpGet(theUrl) {
-  var xmlHttp = new XMLHttpRequest();
-  xmlHttp.open("GET", theUrl, false); // false for synchronous request
-  xmlHttp.send(null);
-  return xmlHttp.responseText;
 }
