@@ -47,14 +47,12 @@ async function wikiSearch(message) {
     );
 
     var wikiSearchResults = await requestData(getWikiSearchString(toSearch));
-    // let resultArray = [];
     if (wikiSearchResults.hasOwnProperty("query")) {
-      // resultArray = processWikiResults(wikiSearchResults.query.pages[0]);
 
       let pages = wikiSearchResults.query.pages;
 
       createSearchEmbed(
-        toSearch,
+        pages[Object.keys(pages)[0]].title,
         pages,
         encodeURI(WIKI_CLIENT_DOMAIN + toSearch),
         message.channel
@@ -68,16 +66,19 @@ async function wikiSearch(message) {
 }
 
 async function wikiRandom(message) {
-	const randomURL = "https://en.wikipedia.org/w/api.php?action=query&list=random&format=json&rnnamespace=0&rnlimit=1";
+	const randomURL = "https://en.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=pageimages|extracts&exchars=500&exintro&explaintext&exlimit=max&format=json&origin=*";
 	var result = await requestData(encodeURI(randomURL));
 
+	console.log(result);
+
 	if (result.hasOwnProperty("query")) {
-		console.log("Data: " + result);
+		console.log(result);
 
 		let pages = result.query.pages;
 		let firstPage = pages[Object.keys(pages)[0]];
-		console.error("\n\n" + encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title) + "\n\n");
-		createSearchEmbed(firstPage.title, pages, encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title), message);
+		console.log("Website url: " + encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title));
+		console.log(firstPage.title);
+		createRandomEmbed(firstPage.title, pages, encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title), message.channel);
 	} else {
 		console.log("ERROR: result has no property 'query'");
 	}
@@ -104,42 +105,54 @@ async function requestData(searchString) {
 
 function createSearchEmbed(title, pages, link, channel) {
   console.log(pages[Object.keys(pages)[0]]);
-  const exampleEmbed = new Discord.MessageEmbed()
+  const searchEmbed = new Discord.MessageEmbed()
     .setColor("#0099ff")
     .setTitle(title)
     .setURL(link)
-    .setAuthor(
-      // thunmbnail image breaks other parts
-      "Wikipedia",
-      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
-        ? pages[Object.keys(pages)[0]].thumbnail.source
-        : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png",
-      link
-    )
     .setDescription(pages[Object.keys(pages)[0]].extract)
-    .setThumbnail(pages[Object.keys(pages)[0]].extract)
     .addFields(
+	  {
+		  value: `Did you mean: [Title](www.google.com)`,
+		  inline: false
+	  },
       {
-        name: "Did you mean",
+        name: `[${pages[Object.keys(pages)[1]].title}](${encodeURI(WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[1]].title)})`,
         value: pages[Object.keys(pages)[1]].extract,
         inline: true,
       },
       {
-        name: "Did you mean",
+        name: pages[Object.keys(pages)[2]].title,
         value: pages[Object.keys(pages)[2]].extract,
         inline: true,
       },
-      {
-        name: "Did you mean",
-        value: pages[Object.keys(pages)[3]].extract,
-        inline: true,
-      }
+      // {
+      //   name: "Did you mean",
+      //   value: pages[Object.keys(pages)[3]].extract,
+      //   inline: true,
+      // }
     )
-
+	.setImage(
+		pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
+		? pages[Object.keys(pages)[0]].thumbnail.source
+		: "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png")
     .setTimestamp()
-    .setFooter("Some footer text here", "https://i.imgur.com/wSTFkRM.png");
+	
+  channel.send(searchEmbed);
+}
 
-  channel.send(exampleEmbed);
+function createRandomEmbed(title, pages, link, channel) {
+	const randomEmbed = new Discord.MessageEmbed()
+    .setColor("#0099ff")
+    .setTitle(title)
+    .setURL(link)
+    .setDescription(pages[Object.keys(pages)[0]].extract)
+    .setImage(
+		pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
+        ? pages[Object.keys(pages)[0]].thumbnail.source : 
+		"https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png",
+	)
+    .setTimestamp()
+  channel.send(randomEmbed);
 }
 
 // code dumpster
