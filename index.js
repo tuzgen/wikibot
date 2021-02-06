@@ -17,11 +17,16 @@ client.login(token);
 // CONSTANTS
 const WIKI_SEARCH = `${prefix}wikisearch`;
 const MAX_CHARS = 500;
+const WIKI_CLIENT_DOMAIN = "https://en.wikipedia.org/wiki/";
 
 // client messages
 client.on("message", async (message) => {
-  if (message.content.startsWith(WIKI_SEARCH)) {
-    await wikiSearch(message);
+  if (!message.author.bot) {
+    if (message.content.startsWith(WIKI_SEARCH)) {
+      await wikiSearch(message);
+    } else {
+      message.channel.send(`Command not found please use ${prefix}help`);
+    }
   }
 });
 
@@ -32,19 +37,24 @@ async function wikiSearch(message) {
 
   if (toSearch.length > 0) {
     // output prompt
-    message.channel.send(`Searching \"${toSearch}\" on Wikipedia...`);
+    message.channel.send(`\`\`\`Searching \"${toSearch}\" on Wikipedia...\`\`\``);
 
-	var wikiSearchResults = await requestData(getWikiSearchString(toSearch));
-	// console.log(wikiSearchResults);
-	// let resultArray = [];
-	if (wikiSearchResults.hasOwnProperty("query")) {
-        // resultArray = processWikiResults(wikiSearchResults.query.pages[0]);
-		// console.log(wikiSearchResults.query.pages[0]);
-		message.channel.send(wikiSearchResults.query.pages[Object.keys(wikiSearchResults.query.pages)[0]].extract);
+    var wikiSearchResults = await requestData(getWikiSearchString(toSearch));
+    // let resultArray = [];
+    if (wikiSearchResults.hasOwnProperty("query")) {
+      // resultArray = processWikiResults(wikiSearchResults.query.pages[0]);
+
+      let pages = wikiSearchResults.query.pages;
+
+      createEmbed(
+        toSearch,
+        pages,
+        WIKI_CLIENT_DOMAIN + toSearch,
+        message.channel
+      );
     } else {
-		message.channel.send("Could not found that...");
-	}
-	
+      message.channel.send("Could not found that...");
+    }
   } else {
     message.channel.send(`I can't search for nothing you dumbfuck`);
   }
@@ -52,28 +62,48 @@ async function wikiSearch(message) {
 
 function getWikiSearchString(searchTerm) {
   var rawSearchString = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${searchTerm}&gsrlimit=20&prop=pageimages|extracts&exchars=${MAX_CHARS}&exintro&explaintext&exlimit=max&format=json&origin=*`;
-  //  console.log("Raw:\n " + rawSearchString);
   const searchString = encodeURI(rawSearchString);
-  // console.log("Parsed:\n " + searchString);
   return searchString;
 }
 
-
 async function requestData(searchString) {
-  // console.log(`Requesting data with string \n${searchString}\n...`);
-
   try {
-    // console.log(`Requesting data with string \n${searchString}\n...`);
     const response = await fetch(searchString);
     const data = await response.json();
-    // console.log("Response: " + response);
-    // console.log("Data: " + data);
     return data;
   } catch (err) {
     console.error(err);
   }
 }
 
+function createEmbed(title, pages, link, channel) {
+	console.log(pages[Object.keys(pages)[0]]);
+  const exampleEmbed = new Discord.MessageEmbed()
+    .setColor("#0099ff")
+    .setTitle(title)
+    .setURL(link)
+    .setAuthor( // thunmbnail image breaks other parts
+      "Wikipedia",
+      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail") 
+	  	? pages[Object.keys(pages)[0]].thumbnail.source 
+		  : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png",
+      link
+    )
+    .setDescription(pages[
+		Object.keys(pages)[0]
+	].extract)
+    .setThumbnail(pages[Object.keys(pages)[0]].extract)
+    .addFields(
+      { name: 'Did you mean', value: pages[Object.keys(pages)[1]].extract, inline: true },
+      { name: 'Did you mean', value: pages[Object.keys(pages)[2]].extract, inline: true },
+      { name: 'Did you mean', value: pages[Object.keys(pages)[3]].extract, inline: true },
+    )
+    
+    .setTimestamp()
+    .setFooter("Some footer text here", "https://i.imgur.com/wSTFkRM.png");
+
+  channel.send(exampleEmbed);
+}
 
 // code dumpster
 function processWikiResults(results) {
