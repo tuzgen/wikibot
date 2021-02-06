@@ -1,5 +1,6 @@
 // set up dependencies
 const Discord = require("discord.js");
+const fetch = require("node-fetch");
 
 // set up discord client
 const { prefix, token } = require("./config.json");
@@ -18,36 +19,35 @@ const WIKI_SEARCH = `${prefix}wikisearch`;
 const MAX_CHARS = 500;
 
 // client messages
-client.on("message", (message) => {
+client.on("message", async (message) => {
   if (message.content.startsWith(WIKI_SEARCH)) {
-	wikiSearch(message);
+    await wikiSearch(message);
   }
 });
 
 // functions
-function wikiSearch(message) {
-	 // parse message
-	 var toSearch = message.content.substr(WIKI_SEARCH.length + 1);
- 
-	 if (toSearch.length > 0) {
-	   // output prompt
-	   message.channel.send(`Searching \"${toSearch}\" on Wikipedia...`);
- 
-	   const retrieveSearchResults = async () => {
-		 const wikiSearchString = getWikiSearchString(toSearch);
-		 const wikiSearchResults = await requestData(wikiSearchString);
-		 console.log(wikiSearchResults);
-		 let resultArray = [];
-		 if (wikiSearchResults.hasOwnProperty("query")) {
-		   resultArray = processWikiResults(wikiSearchResults.query.pages[0]);
-		 }
-		 return resultArray;
-	   };
- 
-	   console.log(retrieveSearchResults[0]);
-	 } else {
-	   message.channel.send(`I can't search for nothing you dumbfuck`);
-	 }
+async function wikiSearch(message) {
+  // parse message
+  var toSearch = message.content.substr(WIKI_SEARCH.length + 1);
+
+  if (toSearch.length > 0) {
+    // output prompt
+    message.channel.send(`Searching \"${toSearch}\" on Wikipedia...`);
+
+	var wikiSearchResults = await requestData(getWikiSearchString(toSearch));
+	console.log(wikiSearchResults);
+	// let resultArray = [];
+	if (wikiSearchResults.hasOwnProperty("query")) {
+        // resultArray = processWikiResults(wikiSearchResults.query.pages[0]);
+		console.log(wikiSearchResults.query.pages[0]);
+		message.channel.send(wikiSearchResults.query.pages[Object.keys(wikiSearchResults.query.pages)[0]].extract);
+    } else {
+		message.channel.send("Something is wrong...");
+	}
+	
+  } else {
+    message.channel.send(`I can't search for nothing you dumbfuck`);
+  }
 }
 
 function getWikiSearchString(searchTerm) {
@@ -57,15 +57,10 @@ function getWikiSearchString(searchTerm) {
   console.log("Parsed:\n " + searchString);
   return searchString;
 }
-/*
-var rawSearchString = `https://en.wikipedia.org/w/api.php?action=query`;
-	rawSearchString.concat(`&generator=search&gsrsearch=${searchTerm}&gsrlimit=20&prop=pageimages`);
-	rawSearchString.concat(`|extracts&exchars=${MAX_CHARS}&exintro&explaintext&exlimit=max&format=json&origin=*`);
-*/
+
 
 async function requestData(searchString) {
-
-    console.log(`Requesting data with string \n${searchString}\n...`);
+  console.log(`Requesting data with string \n${searchString}\n...`);
 
   try {
     console.log(`Requesting data with string \n${searchString}\n...`);
@@ -79,6 +74,8 @@ async function requestData(searchString) {
   }
 }
 
+
+// code dumpster
 function processWikiResults(results) {
   const resultArray = [];
   Object.keys(results).forEach((key) => {
