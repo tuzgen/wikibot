@@ -35,14 +35,14 @@ async function wikiSearch(message) {
     message.channel.send(`Searching \"${toSearch}\" on Wikipedia...`);
 
 	var wikiSearchResults = await requestData(getWikiSearchString(toSearch));
-	console.log(wikiSearchResults);
+	// console.log(wikiSearchResults);
 	// let resultArray = [];
 	if (wikiSearchResults.hasOwnProperty("query")) {
         // resultArray = processWikiResults(wikiSearchResults.query.pages[0]);
-		console.log(wikiSearchResults.query.pages[0]);
+		// console.log(wikiSearchResults.query.pages[0]);
 		message.channel.send(wikiSearchResults.query.pages[Object.keys(wikiSearchResults.query.pages)[0]].extract);
     } else {
-		message.channel.send("Something is wrong...");
+		message.channel.send("Could not found that...");
 	}
 	
   } else {
@@ -52,22 +52,22 @@ async function wikiSearch(message) {
 
 function getWikiSearchString(searchTerm) {
   var rawSearchString = `https://en.wikipedia.org/w/api.php?action=query&generator=search&gsrsearch=${searchTerm}&gsrlimit=20&prop=pageimages|extracts&exchars=${MAX_CHARS}&exintro&explaintext&exlimit=max&format=json&origin=*`;
-  console.log("Raw:\n " + rawSearchString);
+  //  console.log("Raw:\n " + rawSearchString);
   const searchString = encodeURI(rawSearchString);
-  console.log("Parsed:\n " + searchString);
+  // console.log("Parsed:\n " + searchString);
   return searchString;
 }
 
 
 async function requestData(searchString) {
-  console.log(`Requesting data with string \n${searchString}\n...`);
+  // console.log(`Requesting data with string \n${searchString}\n...`);
 
   try {
-    console.log(`Requesting data with string \n${searchString}\n...`);
+    // console.log(`Requesting data with string \n${searchString}\n...`);
     const response = await fetch(searchString);
     const data = await response.json();
-    console.log("Response: " + response);
-    console.log("Data: " + data);
+    // console.log("Response: " + response);
+    // console.log("Data: " + data);
     return data;
   } catch (err) {
     console.error(err);
