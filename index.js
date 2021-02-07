@@ -17,6 +17,8 @@ client.login(token);
 // CONSTANTS
 const WIKI_SEARCH = `${prefix}wikisearch`;
 const WIKI_RANDOM = `${prefix}wikirandom`;
+const WIKI_OTD = `${prefix}wikiotd`;
+const WIKI_HELP = `${prefix}help`;
 const MAX_CHARS = 500;
 const WIKI_CLIENT_DOMAIN = "https://en.wikipedia.org/wiki/";
 
@@ -27,11 +29,45 @@ client.on("message", async (message) => {
       await wikiSearch(message);
     } else if (message.content.startsWith(WIKI_RANDOM)) {
       await wikiRandom(message);
-    } else if (message.content.startsWith(`${prefix}`)) {
-      message.channel.send(`Command not found please use ${prefix}help`);
+    } else if (message.content.startsWith(WIKI_OTD)) {
+		await wikiOTD();
+	} else if (message.content.startsWith(WIKI_HELP)) {
+		wikiHelp(message);
+	} else if (message.content.startsWith(prefix)) {
+      message.channel.send(`Command not found please use ${WIKI_HELP}`);
     }
   }
 });
+
+function wikiHelp(message) {
+	// TODO maybe later retrieve help info from another website?
+	createHelpEmbed(message.channel);
+
+	function createHelpEmbed(channel) {
+		const helpEmbed = new Discord.MessageEmbed()
+		.setColor("#0099ff")
+		.setTitle("WikiBOT")
+		.setURL("https://github.com/oguztuzgen/wikibot")
+		.setDescription("WikiBOT is an under-development Wikipedia query tool for Discord servers.")
+		.addFields(
+			{
+				name: "Searching Wikipedia",
+				value: `\`\`\`${WIKI_SEARCH} [item]\`\`\``
+			},
+			{
+				name: "Get a random article from Wikipedia",
+				value: `\`\`\`${WIKI_RANDOM}\`\`\``
+			}, 
+			{
+				name: "Get today's events, births, deaths and holdiays",
+				value: `\`\`\`${WIKI_OTD}\`\`\`` // TODO make events births etc options
+			}
+		)
+		.setTimestamp();
+	  channel.send(helpEmbed);
+	}
+}
+
 
 // functions
 async function wikiSearch(message) {
@@ -60,6 +96,47 @@ async function wikiSearch(message) {
   } else {
     message.channel.send(`I can't search for nothing you dumbfuck`);
   }
+
+
+  function createSearchEmbed(title, pages, link, channel) {
+	console.log(pages[Object.keys(pages)[0]]);
+  
+	
+	const searchEmbed = new Discord.MessageEmbed()
+	  .setColor("#0099ff")
+	  .setTitle(title)
+	  .setURL(link)
+	  .setDescription(pages[Object.keys(pages)[0]].extract)
+	  .addFields(
+		{
+		  name: `I found ${pages[Object.keys(pages)[0]].title}`,
+		  value: "But did you mean:",
+		  inline: false,
+		},
+		{
+		  name: pages[Object.keys(pages)[1]].title,
+		  value: `[${pages[Object.keys(pages)[1]].title}](${encodeURI(
+			  WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[1]].title
+			)})\n` + pages[Object.keys(pages)[1]].extract,
+		  inline: true,
+		},
+		{
+		  name: pages[Object.keys(pages)[2]].title,
+		  value: `[${pages[Object.keys(pages)[2]].title}](${encodeURI(
+			  WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[2]].title
+			)})\n` + pages[Object.keys(pages)[2]].extract,
+		  inline: true,
+		},
+	  )
+	  .setImage(
+		pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
+		  ? pages[Object.keys(pages)[0]].thumbnail.source
+		  : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
+	  )
+	  .setTimestamp();
+  
+	channel.send(searchEmbed);
+  }
 }
 
 async function wikiRandom(message) {
@@ -87,6 +164,29 @@ async function wikiRandom(message) {
   } else {
     console.log("ERROR: result has no property 'query'");
   }
+
+  function createRandomEmbed(title, pages, link, channel) {
+	const randomEmbed = new Discord.MessageEmbed()
+	  .setColor("#0099ff")
+	  .setTitle(title)
+	  .setURL(link)
+	  .setDescription(pages[Object.keys(pages)[0]].extract)
+	  .setImage(
+		pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
+		  ? pages[Object.keys(pages)[0]].thumbnail.source
+		  : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
+	  )
+	  .setTimestamp();
+	channel.send(randomEmbed);
+  }
+}
+
+async function wikiOTD() {
+	const otdURL = "en.wikipedia.org/api/rest_v1/feed/onthisday/all/{mm}/{dd}";
+
+	function createOTDEmbed() {
+
+	}
 }
 
 function getWikiSearchString(searchTerm) {
@@ -108,57 +208,4 @@ async function requestData(searchString) {
   }
 }
 
-function createSearchEmbed(title, pages, link, channel) {
-  console.log(pages[Object.keys(pages)[0]]);
 
-  
-  const searchEmbed = new Discord.MessageEmbed()
-    .setColor("#0099ff")
-    .setTitle(title)
-    .setURL(link)
-    .setDescription(pages[Object.keys(pages)[0]].extract)
-    .addFields(
-      {
-		name: `I found ${pages[Object.keys(pages)[0]].title}`,
-        value: "But did you mean:",
-        inline: false,
-      },
-      {
-        name: pages[Object.keys(pages)[1]].title,
-        value: `[${pages[Object.keys(pages)[1]].title}](${encodeURI(
-			WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[1]].title
-		  )})\n` + pages[Object.keys(pages)[1]].extract,
-        inline: true,
-      },
-      {
-        name: pages[Object.keys(pages)[2]].title,
-        value: `[${pages[Object.keys(pages)[2]].title}](${encodeURI(
-			WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[2]].title
-		  )})\n` + pages[Object.keys(pages)[2]].extract,
-        inline: true,
-      },
-    )
-    .setImage(
-      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
-        ? pages[Object.keys(pages)[0]].thumbnail.source
-        : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
-    )
-    .setTimestamp();
-
-  channel.send(searchEmbed);
-}
-
-function createRandomEmbed(title, pages, link, channel) {
-  const randomEmbed = new Discord.MessageEmbed()
-    .setColor("#0099ff")
-    .setTitle(title)
-    .setURL(link)
-    .setDescription(pages[Object.keys(pages)[0]].extract)
-    .setImage(
-      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
-        ? pages[Object.keys(pages)[0]].thumbnail.source
-        : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
-    )
-    .setTimestamp();
-  channel.send(randomEmbed);
-}
