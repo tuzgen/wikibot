@@ -21,6 +21,7 @@ const WIKI_OTD = `${prefix}wikiotd`;
 const WIKI_HELP = `${prefix}help`;
 const MAX_CHARS = 500;
 const WIKI_CLIENT_DOMAIN = "https://en.wikipedia.org/wiki/";
+const Today = new Date(); 
 
 // client messages
 client.on("message", async (message) => {
@@ -185,9 +186,37 @@ async function wikiRandom(message) {
 }
 
 async function wikiOTD() {
-  const otdURL = "en.wikipedia.org/api/rest_v1/feed/onthisday/all/{mm}/{dd}";
+  const otdURL = `en.wikipedia.org/api/rest_v1/feed/onthisday/all/${Today.getMonth}/${Today.getDay}`;
+  var result = await requestData(encodeURI(otdURL));
+  console.log(result);
 
-  function createOTDEmbed() {}
+  if (result.hasOwnProperty("query")) {
+    console.log(result);
+
+    let pages = result.query.pages;
+    let firstPage = pages[Object.keys(pages)[0]];
+    console.log(
+      "Website url: " + encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title)
+    );
+    console.log(firstPage.title);
+  } else {
+    console.log("ERROR: result has no property 'query'");
+  }
+  createOTDEmbed();
+  function createOTDEmbed() {
+    const OTDEmbed = new Discord.MessageEmbed()
+    .setColor("#0099ff")
+    .setTitle(title)
+    .setURL(link)
+    .setDescription(pages[Object.keys(pages)[0]].extract)
+    .setImage(
+      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
+        ? pages[Object.keys(pages)[0]].thumbnail.source
+        : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
+    )
+    .setTimestamp();
+  channel.send(OTDEmbed);
+  }
 }
 
 function getWikiSearchString(searchTerm) {
