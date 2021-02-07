@@ -27,7 +27,7 @@ client.on("message", async (message) => {
       await wikiSearch(message);
     } else if (message.content.startsWith(WIKI_RANDOM)) {
       await wikiRandom(message);
-    } else {
+    } else if (message.content.startsWith(`${prefix}`)) {
       message.channel.send(`Command not found please use ${prefix}help`);
     }
   }
