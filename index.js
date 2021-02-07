@@ -207,14 +207,17 @@ async function wikiOTD(message) {
 	  console.log(getFirstPageExtract(pagesList[0]));
 
 	  var items = [];
-	  
+	  var index = 0;
 		pagesList.forEach(pages => {
 			items.push({
-				name: getFirstPageTitle(pages),
+				name: Object.keys(result)[index][0].toUpperCase()+Object.keys(result)[index].substr(1),
 				value: `[${getFirstPageTitle(pages)}](${getFirstPageWebsiteURL(pages)})\n` + getFirstPageExtract(pages),
 				inline: false
 			});
+      index++;
 		});
+    
+
 
 		console.log(items);
 
@@ -231,8 +234,7 @@ async function wikiOTD(message) {
 	  }
 
 	createOTDEmbed(
-		"On this day in Wikipedia",
-		pagesList,
+		"On This Day In Wikipedia",
 		message.channel
 	);
   } else {
@@ -240,7 +242,7 @@ async function wikiOTD(message) {
   }
   
 
-  function createOTDEmbed(title, pagesList, channel) {
+  function createOTDEmbed(title , channel) {
     const OTDEmbed = new Discord.MessageEmbed()
     .setColor("#0099ff")
     .setTitle(title)
