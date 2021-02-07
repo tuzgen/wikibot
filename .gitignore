@@ -1,5 +1,6 @@
 # Project specific
 test/
+config.json
 
 # Logs
 logs

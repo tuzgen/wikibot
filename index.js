@@ -3,8 +3,9 @@ const Discord = require("discord.js");
 const fetch = require("node-fetch");
 
 // set up discord client
-const { prefix, token } = require("./config.json");
+// const { token } = require("./config.json");
 const client = new Discord.Client();
+const prefix = "~~";
 
 // ready prompt
 client.once("ready", () => {
@@ -12,7 +13,7 @@ client.once("ready", () => {
 });
 
 // login using bot token
-client.login(token);
+client.login(process.env.BOT_TOKEN);
 
 // CONSTANTS
 const WIKI_SEARCH = `${prefix}wikisearch`;
