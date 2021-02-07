@@ -13,22 +13,22 @@ Command: ``` ~~wikisearch random ```
 
 Gets a random article and displays it on the chat window. This is achieved by using Wikipedia's random article feature.
 
-### Article of the day
-Command: ``` ~~wikisearch aotd ```
-
-Retrieves and displays the article of the day.
-
 ### On this day
 Command: ``` ~~wikisearch otd ```
 
 Displays a list of events that occured on this day in history in an embed.
 
-### Get references
+### Article of the day (Coming soon)
+Command: ``` ~~wikisearch aotd ```
+
+Retrieves and displays the article of the day.
+
+### Get references (Coming soon)
 Command: ``` ~~wikisearch [item or wikipedia url] ```
 
 Displays the list of references for a specified page. Since urls in Wikipedia are language specific, switch to the set language of the BOT.
 
-### Languages
+### Languages (Coming soon)
 Command: ``` ~~wikisearch language [language] ```
 
 Change the language setting for the BOT queries. Default is American English. Note: This feature might not be supported by Wikipedia API unless we use a translating software.
@@ -42,6 +42,7 @@ Unfortunately, currently WikiBOT is not hosted therefore is not available for pu
 
 ## Current Maintainers
 [Oğuz Tüzgen](https://github.com/oguztuzgen)
+
 [Selçuk Yılmaz](https://github.com/SelcuukYilmazz)
 
 ## Contributing

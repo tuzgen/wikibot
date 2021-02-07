@@ -102,8 +102,6 @@ async function wikiSearch(message) {
   }
 
   function createSearchEmbed(title, pages, link, channel) {
-    console.log(pages[Object.keys(pages)[0]]);
-
     const searchEmbed = new Discord.MessageEmbed()
       .setColor("#0099ff")
       .setTitle(title)
@@ -148,17 +146,10 @@ async function wikiRandom(message) {
     "https://en.wikipedia.org/w/api.php?format=json&action=query&generator=random&grnnamespace=0&prop=pageimages|extracts&exchars=500&exintro&explaintext&exlimit=max&format=json&origin=*";
   var result = await requestData(encodeURI(randomURL));
 
-  console.log(result);
-
   if (result.hasOwnProperty("query")) {
-    console.log(result);
 
     let pages = result.query.pages;
     let firstPage = pages[Object.keys(pages)[0]];
-    console.log(
-      "Website url: " + encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title)
-    );
-    console.log(firstPage.title);
     createRandomEmbed(
       firstPage.title,
       pages,
@@ -191,8 +182,6 @@ async function wikiOTD(message) {
   const otdURL = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/${('0' + (today.getMonth() + 1)).slice(-2)}/${('0' + today.getDate()).slice(-2)}`;
   var result = await requestData(encodeURI(otdURL));
 
-  console.log(otdURL);
-
   // this API does not have a 'query' field so the check is done via selected
   if (result.hasOwnProperty("selected")) {
 	  var pagesList = [
@@ -201,10 +190,6 @@ async function wikiOTD(message) {
 	  	result.deaths[Object.keys(result.deaths)[0]].pages, 
 	  	result.events[Object.keys(result.events)[0]].pages, 
 	  	result.holidays[Object.keys(result.holidays)[0]].pages];
-
-	  console.log(getFirstPageTitle(pagesList[0]));
-	  console.log(getFirstPageWebsiteURL(pagesList[0]));
-	  console.log(getFirstPageExtract(pagesList[0]));
 
 	  var items = [];
 	  var index = 0;
@@ -216,10 +201,6 @@ async function wikiOTD(message) {
 			});
       index++;
 		});
-    
-
-
-		console.log(items);
 
 	  function getFirstPageWebsiteURL(pages) {
 		return pages[Object.keys(pages)[0]].content_urls.desktop.page;
