@@ -21,7 +21,7 @@ const WIKI_OTD = `${prefix}wikiotd`;
 const WIKI_HELP = `${prefix}help`;
 const MAX_CHARS = 500;
 const WIKI_CLIENT_DOMAIN = "https://en.wikipedia.org/wiki/";
-const Today = new Date(); 
+const WIKI_CLIENT_OTD = "https://en.wikipedia.org/wiki/Wikipedia:On_this_day/Today";
 
 // client messages
 client.on("message", async (message) => {
@@ -33,7 +33,7 @@ client.on("message", async (message) => {
     } else if (message.content.startsWith(WIKI_RANDOM)) {
       await wikiRandom(message);
     } else if (message.content.startsWith(WIKI_OTD)) {
-      await wikiOTD();
+      await wikiOTD(message);
     } else if (message.content.startsWith(WIKI_HELP)) {
       wikiHelp(message);
     } else if (message.content.startsWith(prefix)) {
@@ -185,35 +185,68 @@ async function wikiRandom(message) {
   }
 }
 
-async function wikiOTD() {
-  const otdURL = `en.wikipedia.org/api/rest_v1/feed/onthisday/all/${Today.getMonth}/${Today.getDay}`;
+async function wikiOTD(message) {
+	var today = new Date(); 
+
+  const otdURL = `https://en.wikipedia.org/api/rest_v1/feed/onthisday/all/${('0' + (today.getMonth() + 1)).slice(-2)}/${('0' + today.getDate()).slice(-2)}`;
   var result = await requestData(encodeURI(otdURL));
-  console.log(result);
 
-  if (result.hasOwnProperty("query")) {
-    console.log(result);
+  console.log(otdURL);
 
-    let pages = result.query.pages;
-    let firstPage = pages[Object.keys(pages)[0]];
-    console.log(
-      "Website url: " + encodeURI(WIKI_CLIENT_DOMAIN + firstPage.title)
-    );
-    console.log(firstPage.title);
+  // this API does not have a 'query' field so the check is done via selected
+  if (result.hasOwnProperty("selected")) {
+	  var pagesList = [
+		result.selected[Object.keys(result.selected)[0]].pages, 
+	  	result.births[Object.keys(result.births)[0]].pages, 
+	  	result.deaths[Object.keys(result.deaths)[0]].pages, 
+	  	result.events[Object.keys(result.events)[0]].pages, 
+	  	result.holidays[Object.keys(result.holidays)[0]].pages];
+
+	  console.log(getFirstPageTitle(pagesList[0]));
+	  console.log(getFirstPageWebsiteURL(pagesList[0]));
+	  console.log(getFirstPageExtract(pagesList[0]));
+
+	  var items = [];
+	  
+		pagesList.forEach(pages => {
+			items.push({
+				name: getFirstPageTitle(pages),
+				value: `[${getFirstPageTitle(pages)}](${getFirstPageWebsiteURL(pages)})\n` + getFirstPageExtract(pages),
+				inline: false
+			});
+		});
+
+		console.log(items);
+
+	  function getFirstPageWebsiteURL(pages) {
+		return pages[Object.keys(pages)[0]].content_urls.desktop.page;
+	  }
+
+	  function getFirstPageTitle(pages) {
+		return pages[Object.keys(pages)[0]].displaytitle;
+	  }
+
+	  function getFirstPageExtract(pages) {
+		  return pages[Object.keys(pages)[0]].extract;
+	  }
+
+	createOTDEmbed(
+		"On this day in Wikipedia",
+		pagesList,
+		message.channel
+	);
   } else {
     console.log("ERROR: result has no property 'query'");
   }
-  createOTDEmbed();
-  function createOTDEmbed() {
+  
+
+  function createOTDEmbed(title, pagesList, channel) {
     const OTDEmbed = new Discord.MessageEmbed()
     .setColor("#0099ff")
     .setTitle(title)
-    .setURL(link)
-    .setDescription(pages[Object.keys(pages)[0]].extract)
-    .setImage(
-      pages[Object.keys(pages)[0]].hasOwnProperty("thumbnail")
-        ? pages[Object.keys(pages)[0]].thumbnail.source
-        : "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/Wikipedia-logo-v2.svg/1200px-Wikipedia-logo-v2.svg.png"
-    )
+    .setURL(WIKI_CLIENT_OTD)
+    .setDescription(new Date().toDateString())
+	.addFields(items)
     .setTimestamp();
   channel.send(OTDEmbed);
   }
