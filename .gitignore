@@ -1,6 +1,7 @@
 # Project specific
-test/
 config.json
+test/
+
 
 # Logs
 logs
@@ -118,3 +119,4 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+config.json

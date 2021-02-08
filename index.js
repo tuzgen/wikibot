@@ -3,7 +3,7 @@ const Discord = require("discord.js");
 const fetch = require("node-fetch");
 
 // set up discord client
-// const { token } = require("./config.json");
+const { token } = require("./config.json");
 const client = new Discord.Client();
 const prefix = "~~";
 
@@ -13,7 +13,9 @@ client.once("ready", () => {
 });
 
 // login using bot token
-client.login(process.env.BOT_TOKEN);
+// client.login(process.env.BOT_TOKEN);
+client.login(token);
+
 
 // CONSTANTS
 const WIKI_SEARCH = `${prefix}wikisearch`;
@@ -28,6 +30,7 @@ const WIKI_CLIENT_OTD = "https://en.wikipedia.org/wiki/Wikipedia:On_this_day/Tod
 client.on("message", async (message) => {
   if (!message.author.bot) {
     // avoid schizoid bots
+
     // select action according to user input
     if (message.content.startsWith(WIKI_SEARCH)) {
       await wikiSearch(message);
@@ -46,7 +49,7 @@ client.on("message", async (message) => {
 function wikiHelp(message) {
   // TODO maybe later retrieve help info from another website?
   createHelpEmbed(message.channel);
-
+	// create and send a help message to the origin channel
   function createHelpEmbed(channel) {
     const helpEmbed = new Discord.MessageEmbed()
       .setColor("#0099ff")
@@ -89,6 +92,7 @@ async function wikiSearch(message) {
     if (wikiSearchResults.hasOwnProperty("query")) {
       let pages = wikiSearchResults.query.pages;
 
+	  // create and send embed message
       createSearchEmbed(
         pages[Object.keys(pages)[0]].title,
         pages,
@@ -102,6 +106,8 @@ async function wikiSearch(message) {
     message.channel.send(`I can't search for nothing you dumbfuck`);
   }
 
+  // create a search embed including the title and the link of the searched article
+  // also send two of the closest matches
   function createSearchEmbed(title, pages, link, channel) {
     const searchEmbed = new Discord.MessageEmbed()
       .setColor("#0099ff")
@@ -116,7 +122,7 @@ async function wikiSearch(message) {
         },
         {
           name: pages[Object.keys(pages)[1]].title,
-          value:
+          value: // embedded link
             `[${pages[Object.keys(pages)[1]].title}](${encodeURI(
               WIKI_CLIENT_DOMAIN + pages[Object.keys(pages)[1]].title
             )})\n` + pages[Object.keys(pages)[1]].extract,
